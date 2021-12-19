@@ -36,24 +36,33 @@ async def on_ready():
 
 
 @bot.command()
-async def clearly(ctx, imagenum = 1):
+async def clearly(ctx, imagenum = 1, mode = "d"):
 	try:
 		message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
 	except:
 		await ctx.send("Reply to an image with this command.", delete_after=10)
 		return
 	try:
-		if len(message.attachments):
+		if mode.lower() in ["a","attachments", "attachment"]:
 			attachment = message.attachments[imagenum-1]
 			await attachment.save("tempimage")
-		elif len(message.embeds):
+		elif mode.lower() in ["e","embed","embeds", "embedded"]:
 			attachment = message.embeds[imagenum-1].url
-
 			#https://stackoverflow.com/questions/30229231/python-save-image-from-url
 			img_data = requests.get(attachment).content
 			with open('tempimage', 'wb') as handler:
-			    handler.write(img_data)
+				handler.write(img_data)
+		else:
+			if imagenum-1 < len(message.attachments):
+				attachment = message.attachments[imagenum-1]
+				await attachment.save("tempimage")
+			elif len(message.embeds):
+				attachment = message.embeds[imagenum-1-len(message.attachments)].url
 
+				#https://stackoverflow.com/questions/30229231/python-save-image-from-url
+				img_data = requests.get(attachment).content
+				with open('tempimage', 'wb') as handler:
+					handler.write(img_data)
 		#await ctx.send(message.attachments[0])
 	except Exception as e:
 		print(e)
