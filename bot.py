@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 from discord.ext import commands
 from PIL import Image
+import requests
 
 load_dotenv("config.env")
 TOKEN = os.getenv("TOKEN")
@@ -35,15 +36,24 @@ async def on_ready():
 
 
 @bot.command()
-async def clearly(ctx, imagenum = 0):
+async def clearly(ctx, imagenum = 1):
 	try:
 		message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
 	except:
 		await ctx.send("Reply to an image with this command.", delete_after=10)
 		return
 	try:
-		attachment = message.attachments[0]
-		await attachment.save("tempimage")
+		if len(message.attachments):
+			attachment = message.attachments[imagenum-1]
+			await attachment.save("tempimage")
+		elif len(message.embeds):
+			attachment = message.embeds[imagenum-1].url
+
+			#https://stackoverflow.com/questions/30229231/python-save-image-from-url
+			img_data = requests.get(attachment).content
+			with open('tempimage', 'wb') as handler:
+			    handler.write(img_data)
+
 		#await ctx.send(message.attachments[0])
 	except Exception as e:
 		print(e)
@@ -55,7 +65,7 @@ async def clearly(ctx, imagenum = 0):
 		await ctx.send(file=discord.File('meme.jpg'))
 	except Exception as e:
 		print(e)
-		await ctx.send("Error in processing.")
+		await ctx.send("Error in processing.", delete_after=10)
 		return
 	finally:
 		if os.path.exists("tempimage"):
