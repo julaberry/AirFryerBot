@@ -1,3 +1,4 @@
 git+https://github.com/Rapptz/discord.py
 async-timeout==3.0.1
 Pillow
+python-dotenv
