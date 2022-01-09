@@ -39,29 +39,30 @@ async def on_ready():
 async def clearly(ctx, imagenum = 1, mode = "d"):
 	try:
 		message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+		suffix = str(ctx.message.reference.message_id)
 	except:
 		await ctx.send("Reply to an image with this command.", delete_after=10)
 		return
 	try:
 		if mode.lower() in ["a","attachments", "attachment"]:
 			attachment = message.attachments[imagenum-1]
-			await attachment.save("tempimage")
+			await attachment.save("tempimage" + suffix)
 		elif mode.lower() in ["e","embed","embeds", "embedded"]:
 			attachment = message.embeds[imagenum-1].url
 			#https://stackoverflow.com/questions/30229231/python-save-image-from-url
 			img_data = requests.get(attachment).content
-			with open('tempimage', 'wb') as handler:
+			with open('tempimage'+suffix, 'wb') as handler:
 				handler.write(img_data)
 		else:
 			if imagenum-1 < len(message.attachments):
 				attachment = message.attachments[imagenum-1]
-				await attachment.save("tempimage")
+				await attachment.save("tempimage" + suffix)
 			elif len(message.embeds):
 				attachment = message.embeds[imagenum-1-len(message.attachments)].url
 
 				#https://stackoverflow.com/questions/30229231/python-save-image-from-url
 				img_data = requests.get(attachment).content
-				with open('tempimage', 'wb') as handler:
+				with open('tempimage' + suffix, 'wb') as handler:
 					handler.write(img_data)
 		#await ctx.send(message.attachments[0])
 	except Exception as e:
@@ -69,19 +70,18 @@ async def clearly(ctx, imagenum = 1, mode = "d"):
 		await ctx.send("Attachment " + str(imagenum) + " does not exist", delete_after=10)
 		return
 	try:
-		top = Image.open("tempimage")
-		get_concat_v_resize(top, bottom).save("meme.jpg")
-		await ctx.send(file=discord.File('meme.jpg'))
+		top = Image.open("tempimage" + suffix)
+		get_concat_v_resize(top, bottom).save(suffix + "meme.jpg")
+		await ctx.send(file=discord.File(suffix + 'meme.jpg'))
 	except Exception as e:
 		print(e)
 		await ctx.send("Error in processing.", delete_after=10)
 		return
 	finally:
-		if os.path.exists("tempimage"):
-			os.remove("tempimage")
-		if os.path.exists("meme.jpg"):
-			os.remove("meme.jpg")
-   
+		if os.path.exists("tempimage" + suffix):
+			os.remove("tempimage" + suffix)
+		if os.path.exists(suffix + "meme.jpg"):
+			os.remove(suffix + "meme.jpg")
 
 
 bot.run(TOKEN)
